@@ -1,4 +1,4 @@
-import { Octokit, App } from "octokit";
+import { Octokit } from "@octokit/rest";
 
 /*
  * Voting Weight Calculations for the Developer stakeholder class
@@ -79,7 +79,7 @@ function getDeveloperWeights(ok, fullRepoNames, weight) {
     .sort((e1, e2) => e2[1] - e1[1]);
 }
 
-const octokit = new Octokit({ auth: GITHUB_TOKEN });
+const ok = new Octokit({ auth: GITHUB_TOKEN });
 
 try {
   console.log("Weights from core Filecoin org:");

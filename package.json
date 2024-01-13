@@ -1,9 +1,15 @@
 {
   "type": "module",
-  "dependencies": {
-    "octokit": "^3.1.2"
-  },
   "scripts": {
-    "calculate": "./scripts/calculate.mjs"
+    "calculate": "node ./scripts/calculate.mjs"
+  },
+  "name": "github-weights",
+  "version": "1.0.0",
+  "description": "scripts to calculate github weights for Filecoin protocol voting",
+  "main": "./scripts/calculate.mjs",
+  "author": "Ian Davis",
+  "license": "ISC",
+  "dependencies": {
+    "@octokit/rest": "^20.0.2"
   }
 }

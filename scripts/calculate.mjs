@@ -1,5 +1,6 @@
 import { Octokit } from "@octokit/core";
 import { paginateGraphql } from "@octokit/plugin-paginate-graphql";
+import * as fs from "fs/promises";
 
 /*
  * Voting Weight Calculations for the Developer stakeholder class
@@ -9,7 +10,7 @@ import { paginateGraphql } from "@octokit/plugin-paginate-graphql";
  */
 
 /* Notes / ambiguites encountered while implementing the count
- * - we should define the time frame in number of days rather than number of months to avoid ambiguaity around the different number of days in each month
+ * - consider defining the time frame in number of days rather than number of months to avoid ambiguaity around the different number of days in each month
  * - we should clarify if both committers and authors count as contributors (see note below -- currently counting both as contributors)
  * - we should specify that only public repos qualify (i.e. exclude private repos in filecoin-project, and only allow ecosystem repos that are public)
  * - we should clarify whether this is changes on all branches in the last 6 months, or only the default branch (currently using only default branch)
@@ -24,6 +25,7 @@ const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const PaginatedOctokit = Octokit.plugin(paginateGraphql);
 const OK = new PaginatedOctokit({ auth: GITHUB_TOKEN });
 
+const CUTOFF = addMonths(new Date(), -6).toISOString(); // 6 Months ago
 // TODO this is a placeholder list only. The real list is still TBD.
 const ECOSYSTEM_REPOS = [
   "libp2p/go-libp2p",
@@ -290,20 +292,8 @@ const CORE_FILECOIN_REPOS = [
   "filecoin-project/motion-sp-test",
   "filecoin-project/tla-f3",
   "filecoin-project/go-f3",
-  "filecoin-project/state-storage-starter-kit", // Error?
+  "filecoin-project/state-storage-starter-kit",
 ];
-const CUTOFF = addMonths(new Date(), -6).toISOString(); // 6 Months ago
-
-// Calculate and Print Weights
-
-try {
-  console.log("Weights from ecosystem projects:");
-  console.log(await getDeveloperWeights(OK, ECOSYSTEM_REPOS, 1, CUTOFF));
-  console.log("Weights from core Filecoin org:");
-  console.log(await getDeveloperWeights(OK, CORE_FILECOIN_REPOS, 2, CUTOFF));
-} catch (e) {
-  console.log(e);
-}
 
 // Functions
 async function sleep(ms) {
@@ -446,3 +436,21 @@ async function getDeveloperWeights(ok, fullRepoNames, weight, cutoff) {
   const totalWeights = weights.reduce(addMerge, {});
   return Object.entries(totalWeights).sort((e1, e2) => e2[1] - e1[1]);
 }
+
+async function writeWeights(weights, filename) {
+  let s = "";
+  for (const w of weights) {
+    s += `${w[0]}, ${w[1]}\n`;
+  }
+  await fs.writeFile(`${OUT_DIR}/${filename}`, s);
+}
+
+// Calculate and Print Weights
+const OUT_DIR = "generated";
+await fs.mkdir(OUT_DIR, { recursive: true });
+console.log("Writing weights from ecosystem projects to ecosystem.csv");
+const ecosystem = await getDeveloperWeights(OK, ECOSYSTEM_REPOS, 1, CUTOFF);
+await writeWeights(ecosystem, "ecosystem.csv");
+console.log("Writing weights from core Filecoin projects to core-filecoin.csv");
+const filecoin = await getDeveloperWeights(OK, CORE_FILECOIN_REPOS, 2, CUTOFF);
+await writeWeights(filecoin, "filecoin.csv");

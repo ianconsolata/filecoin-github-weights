@@ -1,7 +1,7 @@
 {
   "type": "module",
   "scripts": {
-    "calculate": "node ./scripts/calculate.mjs"
+    "calculate": "node --experimental-modules ./scripts/calculate.mjs"
   },
   "name": "github-weights",
   "version": "1.0.0",

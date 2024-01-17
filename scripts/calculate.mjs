@@ -448,9 +448,11 @@ async function writeWeights(weights, filename) {
 // Calculate and Print Weights
 const OUT_DIR = "generated";
 await fs.mkdir(OUT_DIR, { recursive: true });
-console.log("Writing weights from ecosystem projects to ecosystem.csv");
+console.log("Fetching data and calculating weights for ecosystem repos");
 const ecosystem = await getDeveloperWeights(OK, ECOSYSTEM_REPOS, 1, CUTOFF);
+console.log("Writing weights from ecosystem repos to ecosystem.csv");
 await writeWeights(ecosystem, "ecosystem.csv");
-console.log("Writing weights from core Filecoin projects to core-filecoin.csv");
+console.log("Fetching data and calculating weights for core Filecoin repos");
 const filecoin = await getDeveloperWeights(OK, CORE_FILECOIN_REPOS, 2, CUTOFF);
+console.log("Writing weights from core Filecoin repos to core-filecoin.csv");
 await writeWeights(filecoin, "filecoin.csv");
